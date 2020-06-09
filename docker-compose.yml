@@ -1,0 +1,55 @@
+version: '3'
+services:
+  postgres:
+    image: 'postgres:latest'
+    environment:
+      - POSTFRES_PASSWORD=postgres_password      # We added this if there's a Postgres errors
+  redis:
+    image: 'redis:latest'
+  nginx:
+    depends_on:        #  solve nginx connect() failed
+      - api            ###
+      - client         ###
+    restart: always 
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+      - '3050:80'  
+  api:
+    depends_on:
+      - postgres
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./server
+    volumes:
+      - /app/node_modules
+      - ./server:/app
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PGUSER=postgres
+      - PGHOST=postgres
+      - PGDATABASE=postgres
+      - PGPASSWORD=postgres_password
+      - PGPORT=5432
+  
+  client:
+    stdin_open: true               # if there's a bug with the latest Create React. App version that is causing the React app to exit when starting whit Docker-Comopse
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./client
+    volumes:
+      - /app/node_modules
+      - ./client:/app
+  worker:
+#    environment:			#  solve nginx connect() failed	 
+#      - REDIS_HOST=redis		###
+#      - REDIS_PORT=6379			###
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./worker
+    volumes:
+      - /app/node_modules
+      - ./worker:/app
+
