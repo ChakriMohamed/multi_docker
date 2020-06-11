@@ -1,10 +1,10 @@
-language: generic    # if travis build fails with "rakefile not found"
+#language: generic    # if travis build fails with "rakefile not found"
 sudo: required
 services:
   - docker
 
 before_install:
-  - docker build -t chakriMohamed/react-test -f ./client/Dockerfile.dev ./client
+  - docker build -t chakriMohamed:react-test -f ./client/Dockerfile.dev ./client
 
 script:
   - docker run -e CI=true chakriMohamed/react-test npm test -- --coverage		 # coverage for exit and end the test
